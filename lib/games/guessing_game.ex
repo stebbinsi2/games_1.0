@@ -1,4 +1,11 @@
 defmodule Games.GuessingGame do
+  @moduledoc """
+  Documentation for `Games.GuessingGame`.
+  """
+
+  @doc """
+  Starts the game.
+  """
   def play() do
     correct_num = :rand.uniform(10)
     guess(correct_num)

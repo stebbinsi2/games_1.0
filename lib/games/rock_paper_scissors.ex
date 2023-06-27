@@ -1,6 +1,13 @@
 defmodule Games.RockPaperScissors do
+  @moduledoc """
+  Documentation for `Games.RockPaperScissors`.
+  """
   @valid_choices ["rock", "paper", "scissors"]
 
+  @doc """
+  Starts the game.
+  """
+  @spec play() :: binary
   def play() do
     Enum.random(@valid_choices)
     |> guess()

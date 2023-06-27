@@ -1,4 +1,8 @@
 defmodule Games.Wordle do
+  @moduledoc """
+  Documentation for `Games.Wordle`.
+  """
+
   defp merge([], []) do
     []
   end
@@ -38,18 +42,26 @@ defmodule Games.Wordle do
 
   # [:grey,         :green,        :green,        :yellow,       :grey]
 
+  @doc """
+  Outputs feedback for combination of answer and a guess to the command line.
+
+  ## Examples
+
+      iex> Games.Wordle.feedback("abcde", "abcde")
+      [:green, :green, :green, :green, :green]
+  """
+  @spec feedback(String.t(), String.t()) :: list(:green | :yellow | :grey)
   def feedback(answer, guess) do
-    cond do
-      answer === guess ->
-        [:green, :green, :green, :green, :green]
+    if answer === guess do
+      [:green, :green, :green, :green, :green]
+    else
+      answer_chars = String.split(answer, "", trim: true)
 
-      true ->
-        answer_chars = String.split(answer, "", trim: true)
-        guess_chars = String.split(guess, "", trim: true)
+      guess_chars = String.split(guess, "", trim: true)
 
-        merge(answer_chars, guess_chars)
-        |> include_occurrences()
-        |> condition_resolution(answer_chars)
+      merge(answer_chars, guess_chars)
+      |> include_occurrences()
+      |> condition_resolution(answer_chars)
     end
   end
 
@@ -59,12 +71,13 @@ defmodule Games.Wordle do
       |> to_string()
       |> String.trim_trailing()
 
-    cond do
-      String.length(guess) != 5 -> prompt()
-      true -> guess
-    end
+    if String.length(guess) != 5, do: prompt(), else: guess
   end
 
+  @doc """
+  Starts the game.
+  """
+  @spec play() :: :ok
   def play() do
     answers = ["toast", "tarts", "hello", "beats"]
     guess_count = 3
