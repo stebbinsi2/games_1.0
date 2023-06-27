@@ -13,8 +13,9 @@ defmodule Games.Wordle do
       a_chars = Enum.map(acc, fn {a_ch, _, _} -> a_ch end)
       freqs = Enum.frequencies(a_chars)
       a_occ_count = (freqs[a_ch] || 0) + 1
-      acc ++ [{a_ch, g_ch, a_occ_count}]
+      [{a_ch, g_ch, a_occ_count} | acc]
     end)
+    |> Enum.reverse()
   end
 
   defp condition_resolution(pairs_with_occs, answer_chars) do
@@ -23,7 +24,6 @@ defmodule Games.Wordle do
       cond do
         a_ch === g_ch -> :green
         Enum.member?(answer_chars, g_ch) and a_occ_count === 1 -> :yellow
-        Enum.member?(answer_chars, g_ch) and a_occ_count > 2 -> :grey
         true -> :grey
       end
     end)
@@ -40,7 +40,9 @@ defmodule Games.Wordle do
 
   def feedback(answer, guess) do
     cond do
-      answer === guess -> [:green, :green, :green, :green, :green]
+      answer === guess ->
+        [:green, :green, :green, :green, :green]
+
       true ->
         answer_chars = String.split(answer, "", trim: true)
         guess_chars = String.split(guess, "", trim: true)
@@ -52,9 +54,15 @@ defmodule Games.Wordle do
   end
 
   defp prompt() do
-    IO.gets("Enter a five letter word: ")
-    |> to_string()
-    |> String.trim_trailing()
+    guess =
+      IO.gets("Enter a five letter word: ")
+      |> to_string()
+      |> String.trim_trailing()
+
+    cond do
+      String.length(guess) != 5 -> prompt()
+      true -> guess
+    end
   end
 
   def play() do
@@ -69,16 +77,25 @@ defmodule Games.Wordle do
 
     reply = feedback(answer, guess)
 
-    stdout = "[" <> Enum.map_join(reply, ", ", fn elem ->
-      ":" <> Atom.to_string(elem)
-    end) <> "]"
-    IO.puts(stdout)
+    Enum.join(
+      [
+        "[",
+        Enum.map_join(reply, ", ", fn elem ->
+          ":#{Atom.to_string(elem)}"
+        end),
+        "]"
+      ],
+      ""
+    )
+    |> IO.puts()
 
     cond do
       reply === [:green, :green, :green, :green, :green] ->
         IO.puts("Correct guess.")
+
       attempt_count === 0 ->
         IO.puts("Too many attempts. Game over.")
+
       true ->
         IO.puts("Guess again.")
         attempt(answer, attempt_count - 1)
